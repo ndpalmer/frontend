@@ -6,15 +6,10 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [14.x]
+    container:
+      image: node
     steps:
       - uses: actions/checkout@v2
-      - name: Setup node
-        uses: actions/setup-node@master
-        with:
-          node-version: '${{ matrix.node-version }}'
       - name: Install dependencies
         run: |
           npm install
@@ -25,6 +20,7 @@ jobs:
           npm run test
   build:
     runs-on: ubuntu-latest
+    needs: test
     steps:
       -
         name: Checkout
@@ -35,9 +31,9 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-      #-
-        #name: Set up Docker Buildx
-        #uses: actions/setup-build-action@v1
+      -
+        name: Set up Docker Buildx
+        uses: actions/setup-build-action@v1
       -
         name: Build and push
         uses: docker/build-push-action@v2
@@ -47,5 +43,3 @@ jobs:
           builder: ${{ steps.buildx.outputs.name }}
           push: true
           tags: ${{ secrets.DOCKER_HUB_USERNAME }}/frontend:latest
-          cache-from: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/frontend:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKER_HUB_USERNAME }}/frontend:buildcache,mode=max
