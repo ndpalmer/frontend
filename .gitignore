@@ -8,6 +8,7 @@
 # testing
 /coverage
 *.dev
+docker-compose.yml
 
 # production
 /build
